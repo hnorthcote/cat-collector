@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    
+    {% for object in object_list %}
+        <div class="card">
+            <a href="{% url 'toy_detail' object.id %}">
+                <div class="card-content">
+                    <span class="card-title">A <span class="{{object.color.lower}}-text">{{object.color}}</span> {{ object.name }}</span>
+                </div>
+            </a>
+        </div>
+    {% endfor %}
+
+{% endblock %}

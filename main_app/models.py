@@ -2,6 +2,13 @@ from django.db import models
 from django.urls import reverse
 # Create your models here.
 
+class Toy(models.Model):
+    name = models.CharField(max_length=50)
+    color = models.CharField(max_length=20)
+
+    def get_absolute_url(self):
+        return reverse('toy_detail', kwargs={'pk': self.id })
+
 class Cat(models.Model):
     name = models.CharField(max_length=100)
     breed = models.CharField(max_length=100)
