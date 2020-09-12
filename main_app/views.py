@@ -3,6 +3,12 @@ from django.shortcuts import render, redirect
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic  import DetailView, ListView
 
+from django.contrib.auth import login
+from django.contrib.auth.forms import UserCreationForm
+
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+
 import uuid
 import boto3
 
@@ -19,10 +25,41 @@ def home(request):
 def about(request):
     return render(request, 'about.html')
 
+def signup(request):
+    # set a variable used to hold error messages
+    error_message = ''
+
+    # check the request method, if POST, then validate the form
+    # if the request method is GET, we need to provide form
+    if request.method == 'POST':
+        # fill out user form with form inputs attached to request obj
+        form = UserCreationForm(request.POST)
+        # check form validation
+        if form.is_valid():
+            # grab the user object so we can log them in 
+            user = form.save()
+            # login user and create session with login()
+            login(request, user)
+            # redirect to '/cats/'
+            return redirect('index')
+        else:
+            error_message = 'Invalid sign up - try again'
+    
+    # GET request territory -  create a blank user creation form
+    form = UserCreationForm()
+    context = {'form': form, 'error_message': error_message}
+
+    return render(request, 'registration/signup.html', context)
+
+
+
+@login_required
 def cats_index(request):
-    cats = Cat.objects.all()
+    cats = Cat.objects.filter(user=request.user)
     return render(request, 'cats/index.html', {'cats': cats})
 
+
+@login_required
 def cats_detail(request, cat_id):
     
     cat = Cat.objects.get(id=cat_id)
@@ -35,6 +72,7 @@ def cats_detail(request, cat_id):
         'toys': toys_cat_doesnt_have
     })
 
+@login_required
 def add_feeding(request, cat_id):
     form = FeedingForm(request.POST)
 
@@ -45,6 +83,7 @@ def add_feeding(request, cat_id):
     
     return redirect('detail', cat_id=cat_id)
 
+@login_required
 def add_photo(request, cat_id):
     # Collect the photo asset from the request
     photo_file = request.FILES.get('photo-file', None)
@@ -74,45 +113,50 @@ def add_photo(request, cat_id):
 
 
 
-
+@login_required
 def assoc_toy(request, cat_id, toy_id):
     Cat.objects.get(id=cat_id).toys.add(toy_id)
     return redirect('detail', cat_id=cat_id)
 
 
+@login_required
 def unassoc_toy(request, cat_id, toy_id):
     Cat.objects.get(id=cat_id).toys.remove(toy_id)
     return redirect('detail', cat_id=cat_id)
     
 
-class CatCreate(CreateView):
+class CatCreate(LoginRequiredMixin, CreateView):
     model = Cat
     fields = ['name', 'breed', 'description', 'age']
 
-class CatUpdate(UpdateView):
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
+
+class CatUpdate(LoginRequiredMixin, UpdateView):
     model = Cat
     fields = ['breed', 'description', 'age']
 
-class CatDelete(DeleteView):
+class CatDelete(LoginRequiredMixin, DeleteView):
     model = Cat
     success_url = '/cats/'
 
-class ToyCreate(CreateView):
+class ToyCreate(LoginRequiredMixin, CreateView):
     model = Toy
     fields = '__all__'
 
-class ToyDetail(DetailView):
+class ToyDetail(LoginRequiredMixin, DetailView):
     model = Toy
 
-class ToyList(ListView):
+class ToyList(LoginRequiredMixin, ListView):
     model = Toy
 
-class ToyUpdate(UpdateView):
+class ToyUpdate(LoginRequiredMixin, UpdateView):
     model = Toy
     fields = '__all__'
 
 
-class ToyDelete(DeleteView):
+class ToyDelete(LoginRequiredMixin, DeleteView):
     model = Toy
     success_url = '/toys/'
 

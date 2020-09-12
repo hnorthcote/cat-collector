@@ -18,11 +18,18 @@
                     <li><a href="{% url 'home' %}" class="left brand-logo">&nbsp;&nbsp;CatCollector</a></li>
                 </ul>
                 <ul class="right">
-                    <li><a href="{% url 'about' %}">About</a></li>
-                    <li><a href="{% url 'cats_create' %}">Add A Cat</a></li>
-                    <li><a href="{% url 'index' %}">View All My Cats</a></li>
-                    <li><a href="{% url 'toys_create' %}">Add A Toy</a></li>
-                    <li><a href="{% url 'toys_index' %}">View Alll Toys</a></li>
+                    <li><a href="{% url 'about' %}">About</a></li>                    
+                    {% if user.is_authenticated %}
+                        <li><a href="{% url 'cats_create' %}">Add A Cat</a></li>
+                        <li><a href="{% url 'index' %}">View All My Cats</a></li>
+                        <li><a href="{% url 'toys_create' %}">Add A Toy</a></li>
+                        <li><a href="{% url 'toys_index' %}">View All Toys</a></li>
+                        <li><a href="{% url 'logout' %}">Logout</a></li>
+                    {% else %}
+                        <li><a href="{% url 'login' %}">Login</a></li>
+                        <li><a href="{% url 'signup' %}">Sign Up</a></li>
+                    {% endif %}
+
                 </ul>
             </div>
         </nav>
